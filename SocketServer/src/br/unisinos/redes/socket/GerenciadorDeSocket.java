@@ -7,11 +7,16 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
-
-public class SocketManager {
-	private ServerSocket socket;
-	private int portOut;
-	private int portIn;
+/**
+ * 
+ * @author Cristiano Castro
+ *
+ */
+public class GerenciadorDeSocket {
+	private static final String FIM = "FIM";
+	private ServerSocket servidorSocket;
+	private int portaSaida;
+	private int portaEntrada;
 	private String clienteHost;
 	
 	/**
@@ -22,24 +27,28 @@ public class SocketManager {
 	 * @param portOut - Porta de saída, a qual enviará mensagens para outro servidor.
 	 * @param portIn - Porta de escuta.
 	 */
-	public SocketManager(String clienteHost, int portOut, int portIn) {
+	public GerenciadorDeSocket(String clienteHost, int portOut, int portIn) {
 		super();
-		this.portOut = portOut;
-		this.portIn = portIn;
+		this.portaSaida = portOut;
+		this.portaEntrada = portIn;
 		this.clienteHost = clienteHost;
 	}
 
 	private Socket getSocket(String clienteHost, int port) throws IOException {
 		if(clienteHost != null && !clienteHost.trim().isEmpty()) {
-			InetAddress i = InetAddress.getByName(clienteHost);
-			socket = new ServerSocket(port, 0, i);
+			InetAddress endereco = InetAddress.getByName(clienteHost);
+			servidorSocket = new ServerSocket(port, 0, endereco);
 		} else {
-			socket = new ServerSocket(port);
+			servidorSocket = new ServerSocket(port);
 		}
 
-		Socket cliente = socket.accept();
+		Socket cliente = servidorSocket.accept();
 
 		return cliente;
+	}
+	
+	private Socket getSocket(int porta) throws IOException {
+		return getSocket("", porta);
 	}
 	
 	/**
@@ -47,8 +56,8 @@ public class SocketManager {
 	 * @return
 	 * @throws IOException
 	 */
-	public Runnable listener() throws IOException {
-		final Socket socket = getSocket("", portIn);
+	public Runnable iniciarServidor() throws IOException {
+		final Socket socket = getSocket(portaEntrada);
 		return new Runnable() {
 
 			public void run() {
@@ -78,8 +87,8 @@ public class SocketManager {
 	 * @return
 	 * @throws IOException
 	 */
-	public Runnable caller() throws IOException {
-		final Socket socket = getSocket(clienteHost, portOut);
+	public Runnable iniciarCliente() throws IOException {
+		final Socket socket = getSocket(clienteHost, portaSaida);
 		return new Runnable() {
 
 			public void run() {
@@ -105,13 +114,13 @@ public class SocketManager {
 	}
 	
 	/**
-	 * Verifica se é a mensagem de saída.
+	 * Verifica se é a mensagem de saída, se for, sai do programa.
 	 * @param mensagem
 	 * @param socket 
 	 * @throws IOException 
 	 */
 	private void checkSaida(String mensagem, Socket socket) throws IOException {
-		if("FIM".equalsIgnoreCase(mensagem)) {
+		if(FIM.equalsIgnoreCase(mensagem)) {
 			if (socket.isConnected()) {
 				System.exit(0);
 			}
