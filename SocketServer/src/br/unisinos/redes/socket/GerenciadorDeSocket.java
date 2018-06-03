@@ -13,7 +13,7 @@ import java.util.Scanner;
  *
  */
 public class GerenciadorDeSocket {
-	private static final String FIM = "FIM";
+	public static final String FIM = "FIM";
 	private ServerSocket servidorSocket;
 	private int portaSaida;
 	private int portaEntrada;
@@ -34,7 +34,7 @@ public class GerenciadorDeSocket {
 		this.clienteHost = clienteHost;
 	}
 
-	private Socket getSocket(String clienteHost, int port) throws IOException {
+	protected Socket getSocket(String clienteHost, int port) throws IOException {
 		if(clienteHost != null && !clienteHost.trim().isEmpty()) {
 			InetAddress endereco = InetAddress.getByName(clienteHost);
 			servidorSocket = new ServerSocket(port, 0, endereco);
@@ -47,14 +47,12 @@ public class GerenciadorDeSocket {
 		return cliente;
 	}
 	
-	private Socket getSocket(int porta) throws IOException {
+	protected Socket getSocket(int porta) throws IOException {
 		return getSocket("", porta);
 	}
 	
-	/**
-	 * Inicia uma thread e abre a porta para escuta.
-	 * @return
-	 * @throws IOException
+	/* (non-Javadoc)
+	 * @see br.unisinos.redes.socket.SocketsManager#iniciarServidor()
 	 */
 	public Runnable iniciarServidor() throws IOException {
 		final Socket socket = getSocket(portaEntrada);
@@ -82,10 +80,8 @@ public class GerenciadorDeSocket {
 
 	}
 	
-	/**
-	 * Inicia uma thread e abre a porta para a escrita.
-	 * @return
-	 * @throws IOException
+	/* (non-Javadoc)
+	 * @see br.unisinos.redes.socket.SocketsManager#iniciarCliente()
 	 */
 	public Runnable iniciarCliente() throws IOException {
 		final Socket socket = getSocket(clienteHost, portaSaida);
@@ -119,7 +115,7 @@ public class GerenciadorDeSocket {
 	 * @param socket 
 	 * @throws IOException 
 	 */
-	private void checkSaida(String mensagem, Socket socket) throws IOException {
+	public static void checkSaida(String mensagem, Socket socket) throws IOException {
 		if(FIM.equalsIgnoreCase(mensagem)) {
 			if (socket.isConnected()) {
 				System.exit(0);
